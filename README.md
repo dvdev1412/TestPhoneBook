@@ -8,7 +8,7 @@ Phone Book
 
 bash
 Copy code
-git clone https://github.com/your-username/contact-manager.git
+git clone https://github.com/dvdev1412/TestPhoneBook.git
 Перейдите в каталог с проектом:
 
 bash
@@ -27,9 +27,9 @@ gradle build
 arduino
 Copy code
 // Команда для запуска (если используется Maven)
-java -jar target/contact-manager.jar
+java -jar target/TestPhoneBook.jar
 // Или команда для запуска (если используется Gradle)
-java -jar build/libs/contact-manager.jar
+java -jar build/libs/TestPhoneBook.jar
 Доступные команды
 После запуска программы у вас будет доступ к следующим командам:
 
