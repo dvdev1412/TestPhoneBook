@@ -1,6 +1,8 @@
 package org.example.service;
 import org.example.ContactInitializer;
 import org.example.model.Contact;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.io.*;
 import java.util.ArrayList;
@@ -38,53 +40,49 @@ public class ContactService {
     }
 
     public void addContact(String fullName, String phoneName, String email) {
+        Logger logger = LoggerFactory.getLogger(ContactService.class);
         if (isValidPhoneNumber(phoneName) && isValidEmail(email)) {
             Contact newContact = new Contact();
             newContact.setFullName(fullName);
             newContact.setPhoneName(phoneName);
             newContact.setEmail(email);
             contacts.add(newContact);
-            System.out.println("Contact created");
+           logger.info("Contact created");
         }
-
-            System.out.println("Error: Email address or number entered is incorrect");
+        else {
+            logger.error("Error: Email address or number entered is incorrect");
+        }
 
 
     }
-    public void deleteContact(String phoneName) {
-
+    public void deleteContact(String email) {
+        Logger logger = LoggerFactory.getLogger(ContactService.class);
         Iterator<Contact> iterator = contacts.iterator();
         while (iterator.hasNext()) {
             Contact contact = iterator.next();
-            if (phoneName.equals(contact.getPhoneName())) {
+            if (email.equals(contact.getEmail())) {
                 iterator.remove();
-                System.out.println("Contact is delete");
+                logger.info("Contact with email {} deleted successfully", email);
                 return;
             }
+            else {
+                logger.warn("Contact with email {} not found", email);
+            }
         }
-             System.out.println("Contact not found");
-
     }
 
     public void saveContactsToFile() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName));
-
-        try {
-    for (Contact contact : contacts) {
-        String line = contact.getFullName() + ";" + contact.getPhoneName() + ";" + contact.getEmail();
-        writer.write(line);
-        writer.newLine();
-    }
-    System.out.println("Contacts save to file: " + outputFileName);
-}
-     catch (IOException e) {
-            System.out.println("Contacts save is error");
-}
-        finally {
-            if (writer != null) {
-                writer.close();
+        Logger logger = LoggerFactory.getLogger(ContactService.class);
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
+            for (Contact contact : contacts) {
+                String line = String.format("%s;%s;%s\n", contact.getFullName(),contact.getPhoneName(),contact.getEmail());
+                writer.write(line);
+                writer.newLine();
             }
+            logger.info("Contacts saved to file: {}", outputFileName);
+        } catch (IOException e) {
+            logger.error("Error saving contacts to file: {}", outputFileName, e);
+            throw e;
         }
     }
 

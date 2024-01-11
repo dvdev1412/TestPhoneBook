@@ -1,5 +1,7 @@
 package org.example;
 import org.example.service.ContactService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import java.io.IOException;
@@ -7,14 +9,16 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        Logger logger = LoggerFactory.getLogger(Main.class);
+
         ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
 
         ContactService contactService = context.getBean(ContactService.class);
         try {
             contactService.initializeContactsIfRequired();
         }
-        catch (Exception e) {
-            System.err.println("Error initializing contacts from file: " + e.getMessage());
+        catch (IOException e) {
+            logger.error("Error initializing contacts from file: {}", e.getMessage());
         }
 
         Scanner scanner = new Scanner(System.in);
@@ -22,7 +26,7 @@ public class Main {
         String option = "";
 
         while (!option.equalsIgnoreCase("4")) {
-            printMenu();
+            MenuHandler.printMenu();
             option = scanner.nextLine();
             switch (option.toLowerCase()) {
                 case "1" -> {
@@ -37,21 +41,12 @@ public class Main {
                     System.out.println("Goodbye!");
 
                 default -> System.out.println("Invalid option. Please try again.");
-
-
             }
         }
     }
 
-    public static void printMenu() {
-        System.out.println("\\nChoose an option:");
-        System.out.println("Add contact: Enter command 1 "  );
-        System.out.println("View All contacts: Enter command 2");
-        System.out.println("Delete Contact: Enter command 3");
-        System.out.println("Exit: Enter command 4");
-    }
-
     public static void handleAddContact(ContactService service, Scanner scanner) {
+        Logger logger = LoggerFactory.getLogger(Main.class);
         System.out.println("Enter full name: ");
         String fullName = scanner.nextLine();
         System.out.println("Enter phone number: ");
@@ -61,21 +56,18 @@ public class Main {
 
         try {
             service.addContact(fullName,phoneNumber,email);
-            System.out.println("Contact added successfully");
-        }  catch (Exception e) {
-            System.out.println("Contact not added to the phone book");
+            logger.info("Contact added successfully");
+        }  catch (IllegalArgumentException e) {
+            logger.error("Invalid contact data: {}", e.getMessage());
+            System.out.println("Invalid contact data. Please check your input and try again.");
         }
-
         try {
             service.saveContactsToFile();
             System.out.println("Contacts saved to the file");
         } catch (IOException e) {
-            System.out.println("Error saving contacts to file");
+            logger.error("Error saving contacts to file");
         }
-
-
     }
-
     public static void handleDeleteContact(ContactService service, Scanner scanner) {
         System.out.println("Enter phone number to delete: ");
         String deletePhone = scanner.nextLine();
@@ -85,6 +77,15 @@ public class Main {
         }
         catch (Exception e) {
             System.out.println("Contact not deleted");
+        }
+    }
+    public class MenuHandler {
+        public static void printMenu() {
+            System.out.println("\nChoose an option:");
+            System.out.println("Add contact: Enter command 1 ");
+            System.out.println("View All contacts: Enter command 2");
+            System.out.println("Delete Contact: Enter command 3");
+            System.out.println("Exit: Enter command 4");
         }
     }
 
